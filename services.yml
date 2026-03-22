@@ -1,0 +1,33 @@
+services:
+  eloquent:
+    name: Eloquent
+    checker:
+      basedir: ./checkers/eloquent
+      script: ./checker-server.py
+      setup: python3 -m pip install --break-system-packages markdown requests selenium
+    vuln:
+      basedir: ./services/eloquent
+  hologram:
+    name: Hologram
+    checker:
+      basedir: ./checkers/Hologram
+      script: ./checker.py
+      setup: python3 -m pip install --break-system-packages -r requirements.txt
+    vuln:
+      basedir: ./services/Hologram/Hologram
+  lifesim:
+    name: Lifesim
+    checker:
+      basedir: ./checkers/lifesim
+      script: ./lifesim.checker.py
+      setup: python3 -m pip install --break-system-packages aiohttp
+    vuln:
+      basedir: ./services/lifesim
+  ribbons:
+    name: Ribbons
+    checker:
+      basedir: ./checkers/ribbons
+      script: ./ribbons.checker.py
+      setup: python3 -m pip install --break-system-packages requests
+    vuln:
+      basedir: ./services/ribbons

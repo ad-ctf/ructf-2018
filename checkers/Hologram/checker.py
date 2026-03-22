@@ -5,7 +5,7 @@ from urllib.error import URLError
 from actions import put, get, check, OK, DOWN, CHECKER_ERROR
 import traceback
 
-SERVICE_PORT = 5000
+SERVICE_PORT = 5001
 
 
 def close(code, public="", private="", flag_id=""):
