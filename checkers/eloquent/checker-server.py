@@ -1,5 +1,6 @@
 #!/usr/bin/python3
 import re
+import signal
 import traceback
 from hashlib import sha256
 from base64 import b64encode
@@ -8,10 +9,12 @@ import sys
 
 import markdown
 from markdown.extensions.toc import TocExtension
+from selenium.common.exceptions import WebDriverException
 
 from generators import gen_login, gen_password, gen_article_title, gen_article_content
-from service_api import signin, signup, post_article, get_article_content, suggest_article, \
-    get_article_id_by_cookies, get_suggestions_by_cookies, ApiException
+from service_api import signin, signup, post_article, get_article_content, get_driver, \
+    click_link, get_page_of_article, get_element_text_by_id, sign_in_with_driver, suggest_article,\
+    get_article_id_by_cookies, get_suggestions_by_cookies, ApiException, emulate_articles_view
 
 OK, CORRUPT, MUMBLE, DOWN, CHECKER_ERROR = 101, 102, 103, 104, 110
 
@@ -19,7 +22,6 @@ ARTICLE_PATTERN = re.compile(r'<div\sclass=\"col-md-3\">(.+)', re.DOTALL)
 TABLE_OF_CONTENTS_PATTERN = re.compile(r'<a\shref=\"#(.+)\">.{1,5}\)')
 PREGENERATED_TABLE_OF_CONTENTS_PATTERN = re.compile(r'<h[3-6]\sid=\"(.+)\"')
 FLAG_LINE_TEMPLATE = re.compile(r"<div\sclass=\"card-header\">(.+)</div>")
-ARTICLE_ID_TEMPLATE = re.compile(r"/article/(\d+)")
 
 
 def print_to_stderr(*args):
@@ -49,39 +51,36 @@ def get_article_table_of_contents(article_content, pregen=False):
     return re.findall(pattern, article_content)
 
 
-def check_article_navigation(host, cookies, article_id, table_of_contents):
-    article_page = get_article_content(host, cookies, article_id)
-    if 'id="mid-text"' not in article_page:
-        print_to_stderr("Article page misses navbar subtitle field")
-        exit(MUMBLE)
+def check_article_js(driver, host, article_id, table_of_contents):
+    get_page_of_article(driver, host, article_id)
     for header in table_of_contents:
-        if 'href="#{}"'.format(header) not in article_page:
-            print_to_stderr('No table-of-contents link for "{}"'.format(header))
+        click_link(driver, "#" + header)
+        print_to_stderr(str(driver.find_element_by_id('mid-text')))
+        text = get_element_text_by_id(driver, 'mid-text')
+        exp_text = 'Current subtitle: {}'.format(header)
+        if text != exp_text:
+            print_to_stderr('Title "{}" doesn\'t changed. text={}, expected={}'.format(header, text, exp_text))
             exit(MUMBLE)
-        if 'id="{}"'.format(header) not in article_page:
-            print_to_stderr('No section id for "{}"'.format(header))
-            exit(MUMBLE)
-
-
-def emulate_articles_view(host, cookies):
-    suggestions_page = get_suggestions_by_cookies(host, cookies)
-    for article_id in re.findall(ARTICLE_ID_TEMPLATE, suggestions_page):
-        article_page = get_article_content(host, cookies, article_id)
-        for header in get_article_table_of_contents(article_page):
-            if 'href="#{}"'.format(header) not in article_page:
-                print_to_stderr('Suggestion article {} misses toc link {}'.format(article_id, header))
-                exit(MUMBLE)
 
 
 def check(host):
-    username = gen_login()
-    password = gen_password()
-    cookies = signup(host, username, password)
-    post_article(host, cookies, gen_article_title(), gen_article_content())
-    article_id = get_article_id_by_cookies(host, cookies, from_suggestions=False)
-    article_content = get_article_content(host, cookies, article_id)
-    table_of_contents = get_article_table_of_contents(article_content)
-    check_article_navigation(host, cookies, article_id, table_of_contents)
+    driver = get_driver()
+    try:
+        username = gen_login()
+        password = gen_password()
+        cookies = signup(host, username, password)
+        post_article(host, cookies, gen_article_title(), gen_article_content())
+        article_id = get_article_id_by_cookies(host, cookies, from_suggestions=False)
+        article_content = get_article_content(host, cookies, article_id)
+        table_of_contents = get_article_table_of_contents(article_content)
+        sign_in_with_driver(driver, host, username, password)
+        check_article_js(driver, host, article_id, table_of_contents)
+        driver.quit()
+    finally:
+        try:
+            driver.service.process.send_signal(signal.SIGTERM)
+        except AttributeError:
+            pass
     exit(OK)
 
 
@@ -124,7 +123,15 @@ def get(host, flag_id, flag, vuln):
     if real_flag != flag:
         print_to_stderr('expected flag={}\nreal flag={}'.format(flag, real_flag))
         exit(CORRUPT)
-    emulate_articles_view(host, cookies)
+    driver = get_driver()
+    try:
+        emulate_articles_view(driver, host, username, password)
+        driver.quit()
+    finally:
+        try:
+            driver.service.process.send_signal(signal.SIGTERM)
+        except AttributeError:
+            pass
     exit(OK)
 
 
@@ -137,6 +144,9 @@ def main():
     except ApiException as e:
         print_to_stderr(e.exc_message)
         exit(int(e.exc_type.value))
+    except WebDriverException as e:
+        print_to_stderr('undefined is not an object: {}'.format(e))
+        exit(MUMBLE)
     except Exception:
         traceback.print_exc()
         exit(CHECKER_ERROR)
