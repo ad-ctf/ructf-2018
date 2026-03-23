@@ -1,0 +1,4 @@
+Markdown<3
+requests
+selenium==3.141.0
+urllib3<2

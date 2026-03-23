@@ -1,4 +1,6 @@
 from enum import Enum
+from pathlib import Path
+import os
 
 import re
 from time import sleep
@@ -12,6 +14,7 @@ from selenium.webdriver.common.keys import Keys
 from generators import gen_user_agent
 
 PORT = 8080
+PHANTOMJS_PATH = Path(__file__).resolve().parent / ".runtime" / "phantomjs-2.1.1-linux-x86_64" / "bin" / "phantomjs"
 
 
 SIGNUP_URL = "http://{host}:{port}/registration"
@@ -56,9 +59,14 @@ def api_method(func):
 
 
 def get_driver():
+    if not PHANTOMJS_PATH.exists():
+        raise ApiException(ExceptionType.DOWN, "phantomjs runtime is missing; run ./setup.sh")
+
+    os.environ.setdefault("OPENSSL_CONF", "/dev/null")
     dcap = dict(DesiredCapabilities.PHANTOMJS)
     dcap["phantomjs.page.settings.userAgent"] = gen_user_agent()
     driver = webdriver.PhantomJS(
+        executable_path=str(PHANTOMJS_PATH),
         desired_capabilities=dcap,
         service_log_path='/dev/null',
     )
