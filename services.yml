@@ -23,6 +23,14 @@ services:
       setup: python3 -m pip install --break-system-packages aiohttp
     vuln:
       basedir: ./services/lifesim
+  nodbrary:
+    name: Nodbrary
+    checker:
+      basedir: ./checkers/nodbrary
+      script: ./nodbrary.checker.py
+      setup: python3 -m pip install --break-system-packages -r requirements.txt
+    vuln:
+      basedir: ./services/nodbrary
   ribbons:
     name: Ribbons
     checker:
@@ -31,3 +39,11 @@ services:
       setup: python3 -m pip install --break-system-packages requests
     vuln:
       basedir: ./services/ribbons
+  thinkerer:
+    name: Thinkerer
+    checker:
+      basedir: ./services/thinkerer
+      script: ./bazel-bin/checker/checker
+      setup: apt-get update && apt-get install -y git build-essential clang unzip wget && wget -q -c https://github.com/bazelbuild/bazel/releases/download/0.17.1/bazel-0.17.1-installer-linux-x86_64.sh && bash bazel-0.17.1-installer-linux-x86_64.sh && bazel build //checker:all
+    vuln:
+      basedir: ./services/thinkerer

@@ -236,7 +236,7 @@ router
             try {
                 let bookId = validator.validateNumber(body.bookId);
                 let tag = validator.validateString(body.tag);
-                if (tag.length > 35)
+                if (tag.length > 64)
                     throw new ValidationError("");
                 ctx.state.body = {bookId: bookId, tag: tag};
                 await next();
