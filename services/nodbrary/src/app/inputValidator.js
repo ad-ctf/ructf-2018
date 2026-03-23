@@ -21,8 +21,8 @@ let validator = {
     validateString: (str, obj) => {
         if (!str)
             throw new ValidationError("Field " + obj + " couldn't be empty");
-        if (!str.match(/^[a-zA-Z0-9,.()\-"!?;:'= ]*$/i))
-            throw new ValidationError("Field  " + obj + " should contain only letters, digits or symbols: ',', '.', '(', ')', '-', '\"', '!', '?', ';', ':', ''', '='");
+        if (!str.match(/^[a-zA-Z0-9_,.()\-"!?;:'= ]*$/i))
+            throw new ValidationError("Field  " + obj + " should contain only letters, digits or symbols: '_', ',', '.', '(', ')', '-', '\"', '!', '?', ';', ':', ''', '='");
         return str;
     },
     validateHex: (str, obj) => {
