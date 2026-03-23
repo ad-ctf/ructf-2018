@@ -2,8 +2,8 @@ version: '2.2'
 services:
   eloquent:
     build: .
-    network_mode: host
-    command: sh -c "redis-server --daemonize yes && python3 start.py 0.0.0.0 18081"
+    ports:
+      - "8081:8080"
     volumes:
       - .:/home/eloquent
     restart: on-failure
