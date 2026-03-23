@@ -20,5 +20,13 @@ git_repository(
     remote = "https://github.com/nelhage/rules_boost",
 )
 
+new_http_archive(
+    name = "boost",
+    url = "https://archives.boost.io/release/1.66.0/source/boost_1_66_0.tar.gz",
+    build_file = "@com_github_nelhage_rules_boost//:BUILD.boost",
+    strip_prefix = "boost_1_66_0/",
+    sha256 = "bd0df411efd9a585e5a2212275f8762079fed8842264954675a4fddc46cfcf60",
+)
+
 load("@com_github_nelhage_rules_boost//:boost/boost.bzl", "boost_deps")
 boost_deps()

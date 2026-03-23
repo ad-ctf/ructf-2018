@@ -2,9 +2,17 @@ version: '2.2'
 services:
   nodbrary:
     build: .
+    environment:
+      MONGO_URL: mongodb://mongo:27017/test
     ports:
       - "3001:3000"
     restart: on-failure
     mem_limit: 512m
     mem_reservation: 128m
-
+    depends_on:
+      - mongo
+  mongo:
+    image: mongo:4.4
+    restart: on-failure
+    mem_limit: 512m
+    mem_reservation: 128m

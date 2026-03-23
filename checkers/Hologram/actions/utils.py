@@ -10,8 +10,10 @@ def get_random_cords():
 
 
 def get_random_header():
-    generator = mimesis.Science()
-    return "{} {}ous #{}".format(generator.chemical_element(), generator.chemical_element(), random.randint(1, 1000))
+    alphabet = "abcdefghijklmnopqrstuvwxyz"
+    first = "".join(random.choice(alphabet) for _ in range(8)).title()
+    second = "".join(random.choice(alphabet) for _ in range(8)).title()
+    return "{} {}ous #{}".format(first, second, random.randint(1, 1000))
 
 
 def get_random_body():

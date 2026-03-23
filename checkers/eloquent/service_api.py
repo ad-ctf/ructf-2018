@@ -11,7 +11,7 @@ from selenium.webdriver.common.keys import Keys
 
 from generators import gen_user_agent
 
-PORT = 8080
+PORT = 18081
 
 
 SIGNUP_URL = "http://{host}:{port}/registration"

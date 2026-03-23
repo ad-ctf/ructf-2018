@@ -70,7 +70,7 @@ class Ribbons:
 	def _call(self, http_method, api_method, channel_id=None, data=None):
 		params = { "channel_id": channel_id } if channel_id else {}
 		sleep(random.randint(0, 1) + random.random())
-		result = self.session.request(http_method, "http://{}:4243/api/{}".format(self.hostname, api_method), params=params, data=data)
+		result = self.session.request(http_method, "http://{}:4242/api/{}".format(self.hostname, api_method), params=params, data=data)
 		if random.randint(1, 3) == 1:
 			self._session.close()
 			self._session = None
