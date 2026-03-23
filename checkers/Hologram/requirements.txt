@@ -1,2 +1,2 @@
 ws4py
-mimesis
+mimesis>=11,<12

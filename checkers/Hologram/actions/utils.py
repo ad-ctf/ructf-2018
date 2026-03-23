@@ -1,5 +1,6 @@
 import random
-import mimesis
+
+from mimesis import Food, Text
 
 top = 200000000
 down = -200000000
@@ -10,13 +11,13 @@ def get_random_cords():
 
 
 def get_random_header():
-    alphabet = "abcdefghijklmnopqrstuvwxyz"
-    first = "".join(random.choice(alphabet) for _ in range(8)).title()
-    second = "".join(random.choice(alphabet) for _ in range(8)).title()
+    generator = Text("en")
+    first = generator.word().title()
+    second = generator.word().title()
     return "{} {}ous #{}".format(first, second, random.randint(1, 1000))
 
 
 def get_random_body():
-    generator = mimesis.Food()
+    generator = Food("en")
     return "Buy our {}! Drink our {}! Fresh {} & {}! Anything at our store!"\
         .format(generator.dish(), generator.drink(), generator.fruit(), generator.vegetable())
